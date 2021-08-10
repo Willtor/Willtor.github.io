@@ -1,0 +1,202 @@
+<html>
+  <head>
+    <title>Turn Order</title>
+    <style>
+
+.button {
+    font-size: 1.6em;
+    text-decoration: none;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    border: 1px solid #0000F0;
+    font-weight: bold;
+    color: #0000F0
+}
+
+.button:hover {
+    background-color: #3030FF;
+    color: #FFFFFF;
+}
+
+table {
+    border-collapse: collapse;
+    margin: auto;
+}
+
+td {
+    border: 1px solid #CCCCAA;
+    text-align: center;
+    padding: 0.3em;
+    background-color: #FFFFCC;
+}
+
+.moving {
+    background-color: #505000;
+    color: #FFFFFF;
+}
+
+.accrued {
+    font-size: 2.3em;
+}
+
+#impulse_table {
+    text-align: center;
+}
+
+#impulse_number {
+    width: 7.5em;
+    display: inline-block;
+    font-size: 2em;
+}
+
+    </style>
+    <script type="text/javascript" src="../jquery/jquery.js"></script>
+    <script type="text/javascript">
+
+// Movement object has the relation of speeds/impulses.
+function Movement() {
+    impulses = new Array();
+    for (var impulse = 0; impulse < 32; ++impulse) {
+        impulses.push(new Array());
+    }
+
+    // Populate the table of impulse/speed.
+    for (var speed = 1; speed <= 32; ++speed) {
+        var accrued = 0;
+        for (var impulse = 1; impulse < 32; ++impulse) {
+            var curr = Math.floor(speed * impulse / 32);
+            var move = 0;
+            if (curr > accrued) {
+                move = 1;
+                accrued = curr;
+            }
+            var next = 0;
+            for (var future = impulse; future <= 32; ++future) {
+                curr = Math.floor(speed * future / 32);
+                if (curr > accrued) {
+                    next = future;
+                    break;
+                }
+            }
+            impulses[impulse - 1].push([move, accrued, next])
+        }
+
+        // Impulse 32.
+        impulses[31].push([1, speed, 0]);
+    }
+
+    this.impulses = impulses;
+
+    // For a given impulse number and speed, return a tuple:
+    // [move, accrued-movement, next]
+    //   move: boolean, whether the unit moves this impulse.
+    //   accrued-movement: how far the unit has moved this turn.
+    //   next: The next impulse the unit will move.
+    this.impulse_speed = function (impulse, speed) {
+        return this.impulses[impulse - 1][speed - 1];
+    }
+}
+
+var movement = new Movement();
+
+var curr_impulse = 1;
+
+// Update the table with the given impulse.
+function set_impulse(impulse) {
+    $("#impulse_number").text("Impulse " + impulse);
+
+    for (var speed = 1; speed <= 32; ++speed) {
+        var [move, accrued, next] = movement.impulse_speed(impulse, speed);
+        var node = $("#speed_" + speed);
+
+        node.html('<div>Speed ' + speed + '</div>'
+                  + '<div class="accrued">' + accrued + '</div>'
+                  + '<div>Next: ' + next + '</div>');
+
+        if (move) {
+            node.addClass("moving");
+        } else {
+            node.removeClass("moving");
+        }
+    }
+}
+
+$(document).ready(function () {
+    set_impulse(curr_impulse);
+
+    $("#advance").click(function (e) {
+        curr_impulse += 1;
+        if (curr_impulse > 32) {
+            curr_impulse = 1;
+        }
+        set_impulse(curr_impulse);
+        return false;
+    });
+
+    $("#unadvance").click(function (e) {
+        curr_impulse -= 1;
+        if (curr_impulse < 1) {
+            curr_impulse = 32;
+        }
+        set_impulse(curr_impulse);
+        return false;
+    });
+});
+
+    </script>
+  </head>
+  <body>
+
+    <div id="impulse_table">
+<table>
+  <tr>
+    <td id="speed_1">speed_1</td>
+    <td id="speed_2">speed_2</td>
+    <td id="speed_3">speed_3</td>
+    <td id="speed_4">speed_4</td>
+    <td id="speed_5">speed_5</td>
+    <td id="speed_6">speed_6</td>
+    <td id="speed_7">speed_7</td>
+    <td id="speed_8">speed_8</td>
+  </tr>
+  <tr>
+    <td id="speed_9">speed_9</td>
+    <td id="speed_10">speed_10</td>
+    <td id="speed_11">speed_11</td>
+    <td id="speed_12">speed_12</td>
+    <td id="speed_13">speed_13</td>
+    <td id="speed_14">speed_14</td>
+    <td id="speed_15">speed_15</td>
+    <td id="speed_16">speed_16</td>
+  </tr>
+  <tr>
+    <td id="speed_17">speed_17</td>
+    <td id="speed_18">speed_18</td>
+    <td id="speed_19">speed_19</td>
+    <td id="speed_20">speed_20</td>
+    <td id="speed_21">speed_21</td>
+    <td id="speed_22">speed_22</td>
+    <td id="speed_23">speed_23</td>
+    <td id="speed_24">speed_24</td>
+  </tr>
+  <tr>
+    <td id="speed_25">speed_25</td>
+    <td id="speed_26">speed_26</td>
+    <td id="speed_27">speed_27</td>
+    <td id="speed_28">speed_28</td>
+    <td id="speed_29">speed_29</td>
+    <td id="speed_30">speed_30</td>
+    <td id="speed_31">speed_31</td>
+    <td id="speed_32">speed_32</td>
+  </tr>
+</table>
+      <div>
+        <a href="." class="button" id="unadvance">&lt;</a>
+        <div id="impulse_number">Impulse</div>
+        <a href="." class="button" id="advance">&gt;</a>
+      </div>
+    </div>
+  </body>
+</html>
