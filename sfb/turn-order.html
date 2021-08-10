@@ -111,6 +111,10 @@ function set_impulse(impulse) {
         var [move, accrued, next] = movement.impulse_speed(impulse, speed);
         var node = $("#speed_" + speed);
 
+        if (next == 0) {
+            next = "-";
+        }
+
         node.html('<div>Speed ' + speed + '</div>'
                   + '<div class="accrued">' + accrued + '</div>'
                   + '<div>Next: ' + next + '</div>');
